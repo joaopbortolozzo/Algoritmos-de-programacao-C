@@ -1,352 +1,207 @@
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <conio.h>
+#include <string.h>
 
-struct DADOS
-{
+typedef struct {
     int id;
-    int operacao;
-    char label[100];
-    char desc[100];
-    int cod;
+    int tipo;
+    char label[30];
+    char descricao[100];
+    int codigo;
     float valor;
-};
+} Operacao;
 
-struct DADOS dt[100];
-int cont;
+Operacao ops[500];
+int qtd = 0;
+int contador = 1;
 
-void cadastrar() {
+void lancar()
+{
+    Operacao o;
 
-    char buffer[100];
-
-    dt[cont].id = cont;
-
-    printf("\nInsira o tipo de operacao [1 - Deposito ou entrada de valores | 0 - Retirada ou pagamento]: ");
-    fgets(buffer, 100, stdin);
-    dt[cont].operacao = atoi(buffer);
-   
-    printf("\nDefina uma label para tal operacao: ");
-    fgets(buffer, 100, stdin);
-    buffer[strlen(buffer) - 1] = '\0';
-    strcpy(dt[cont].label, buffer);
-   
-    printf("\nDefina uma descricao para tal operacao: ");
-    fgets(buffer, 100, stdin);
-    buffer[strlen(buffer) - 1] = '\0';
-    strcpy(dt[cont].desc, buffer);
-
-    printf("\nInsira o codigo de operacao [0 - Despesas obrigatorias | 1 - Depositos | 2 - Pagamentos por despesas nao obrigatorias]: ");
-    fgets(buffer, 100, stdin);
-    dt[cont].cod = atoi(buffer);
-   
-    printf("\nInsira o valor da operacao: ");
-    fgets(buffer, 100, stdin);
-    dt[cont].valor = atof(buffer);
-   
-    cont++;
-}
-
-void ler_tudo() {
-    char buffer[100];
-    FILE *file;
-    file = fopen("crud.txt", "rt");
-
-    if (file == NULL) {
-        printf("\nArquivo nao encontrado!");
+    if (qtd >= 500) {
+        printf("Limite de operacoes atingido.\n");
         return;
     }
-
-    while (fgets(buffer, 100, file) != NULL) {
-        printf("%s", buffer);
-    }
-    fclose(file);
+    o.id = contador;
+    printf("Tipo (1 - Deposito, 0 - Retirada): ");
+    scanf("%d", &o.tipo);
+    printf("Label: ");
+    scanf(" %29[^\n]", o.label);
+    printf("Descricao: ");
+    scanf(" %99[^\n]", o.descricao);
+    printf("Codigo (0 - Despesa obrigatoria, 1 - Deposito, 2 - Despesa nao obrigatoria): ");
+    scanf("%d", &o.codigo);
+    printf("Valor: ");
+    scanf("%f", &o.valor);
+    ops[qtd] = o;
+    qtd++;
+    contador++;
 }
 
-void salvar() {
-    FILE *file;
-    file = fopen("crud.txt", "wt");
-
-    if (file == NULL) {
-        printf("\nErro ao abrir o arquivo!");
-        return;
-    }
-
-    for (int i = 0; i < cont; i++) {
-        fprintf(file, "%d\n", dt[i].id);
-        fprintf(file, "%d\n", dt[i].operacao);
-        fprintf(file, "%s\n", dt[i].label);
-        fprintf(file, "%s\n", dt[i].desc);
-        fprintf(file, "%d\n", dt[i].cod);
-        fprintf(file, "%.2f\n", dt[i].valor);
-    }
-
-    fclose(file);
-
-    printf("\nArquivo salvo!");
+void imprimir(Operacao o)
+{
+    printf("%d | %d | %s | %s | %d | %.2f\n", o.id, o.tipo, o.label, o.descricao, o.codigo, o.valor);
 }
 
-void salvar_struct() {
-    FILE *file;
-    char buffer[100];
+void saldo()
+{
+    int i;
+    float total = 0;
 
-    file = fopen("C:\\Users\\26002725\\Desktop\\Aula\\crud.txt", "rt");
-
-    if (file == NULL) {
-        printf("\nArquivo nao encontrado!");
-        return;
-    }
-
-    cont = 0;
-
-    while (cont < 100 && fgets(buffer, 100, file) != NULL) {
-
-        dt[cont].id = atoi(buffer);
-
-        fgets(buffer, 100, file);
-        dt[cont].operacao = atoi(buffer);
-
-        fgets(buffer, 100, file);
-        buffer[strcspn(buffer, "\n")] = '\0';
-        strcpy(dt[cont].label, buffer);
-
-        fgets(buffer, 100, file);
-        buffer[strcspn(buffer, "\n")] = '\0';
-        strcpy(dt[cont].desc, buffer);
-
-        fgets(buffer, 100, file);
-        dt[cont].cod = atoi(buffer);
-
-        fgets(buffer, 100, file);
-        dt[cont].valor = atof(buffer);
-
-        cont++;
-    }
-
-    fclose(file);
-
-    printf("\nDados carregados!");
-
-}
-
-void consultar_saldo() {
-    float saldo = 0;
-    for (int i = 0; i < cont; i++) {
-        if (dt[i].operacao == 1) {
-            saldo += dt[i].valor;
-        }
-        else {
-            saldo -= dt[i].valor;
+    for (i = 0; i < qtd; i++) {
+        if (ops[i].tipo == 1) {
+            total += ops[i].valor;
+        } else {
+            total -= ops[i].valor;
         }
     }
-
-    printf("\nSaldo atual: R$ %.2f\n", saldo);
+    printf("Saldo: %.2f\n", total);
 }
 
-void consultar_operacoes() {
-    float valor_total = 0;
-    for (int i = 0; i < cont; i++) {
-        printf("--------OPERACAO %d----------\n", i+1);
-        printf("ID: %d", dt[i].id);
-        printf("\nTipo: %d", dt[i].operacao);
-        printf("\nLabel: %s", dt[i].label);
-        printf("\nDescricao: %s", dt[i].desc);
-        printf("\nCodigo: %d", dt[i].cod);
-        printf("\nValor: %.2f", dt[i].valor);
-        printf("\n------------------\n");
+void listar(int modo, int filtro)
+{
+    int i;
+    float total = 0;
 
-        valor_total += dt[i].valor;
-    }
-    printf("\nValor Total: %.2f", valor_total);
-}
-
-void listar_tipo() {
-    int escolha_tipo;
-    float valor_total = 0;
-    printf("Escolha o tipo de operacao que quer consultar [1 - Deposito ou entrada de valores | 0 - Retirada ou pagamento]: ");
-    scanf("%d", &escolha_tipo);
-
-    if (escolha_tipo != 0 && escolha_tipo != 1) {
-        printf("Valor invalido!");
-        return;
-    }
-
-    for (int i = 0; i < cont; i++) {
-        if(dt[i].operacao == escolha_tipo) {
-            printf("--------OPERACAO %d----------\n", i+1);
-            printf("ID: %d", dt[i].id);
-            printf("\nTipo: %d", dt[i].operacao);
-            printf("\nLabel: %s", dt[i].label);
-            printf("\nDescricao: %s", dt[i].desc);
-            printf("\nCodigo: %d", dt[i].cod);
-            printf("\nValor: %.2f", dt[i].valor);
-            printf("\n------------------\n");
-
-            valor_total += dt[i].valor;
+    for (i = 0; i < qtd; i++) {
+        if (modo == 0 || (modo == 1 && ops[i].tipo == filtro) || (modo == 2 && ops[i].codigo == filtro)) {
+            imprimir(ops[i]);
+            total += ops[i].valor;
         }
     }
-    printf("\nValor Total: %.2f", valor_total);
+    printf("Valor total: %.2f\n", total);
 }
 
-void listar_cod() {
-    int escolha_cod;
-    float valor_total = 0;
-    printf("Escolha o codigo de operacao que quer consultar [0 - Despesas obrigatorias | 1 - Depositos | 2 - Pagamentos por despesas nao obrigatorias]: ");
-    scanf("%d", &escolha_cod);
-   
-    if (escolha_cod < 0 || escolha_cod > 2) {
-        printf("Valor invalido!");
-        return;
-    }
-   
-    for (int i = 0; i < cont; i++) {
-        if(dt[i].cod == escolha_cod) {
-            printf("--------OPERACAO %d----------\n", i+1);
-            printf("ID: %d", dt[i].id);
-            printf("\nTipo: %d", dt[i].operacao);
-            printf("\nLabel: %s", dt[i].label);
-            printf("\nDescricao: %s", dt[i].desc);
-            printf("\nCodigo: %d", dt[i].cod);
-            printf("\nValor: %.2f", dt[i].valor);
-            printf("\n------------------\n");
+void consultarLabel()
+{
+    int i;
+    int achou = 0;
+    char busca[30];
 
-            valor_total += dt[i].valor;
+    printf("Label: ");
+    scanf(" %29[^\n]", busca);
+    for (i = 0; i < qtd; i++) {
+        if (strcmp(ops[i].label, busca) == 0) {
+            imprimir(ops[i]);
+            achou = 1;
         }
     }
-    printf("\nValor Total: %.2f", valor_total);
-}  
+    if (achou == 0) {
+        printf("Label nao encontrado.\n");
+    }
+}
 
-void consultar_label() {
-    char label_consulta[100];
-    printf("Insira a label que quer consultar: ");
-    fgets(label_consulta, 100, stdin);
-    label_consulta[strlen(label_consulta) - 1] = '\0';
+void alterar()
+{
+    int i;
+    int id;
 
-    for(int i = 0; i < cont; i++) {
-        if(strcmp(label_consulta, dt[i].label) == 0) {
-            printf("ID: %d", dt[i].id);
-            printf("\nTipo: %d", dt[i].operacao);
-            printf("\nLabel: %s", dt[i].label);
-            printf("\nDescricao: %s", dt[i].desc);
-            printf("\nCodigo: %d", dt[i].cod);
-            printf("\nValor: %.2f", dt[i].valor);
-            printf("\n------------------\n");
+    printf("ID da operacao: ");
+    scanf("%d", &id);
+    for (i = 0; i < qtd; i++) {
+        if (ops[i].id == id) {
+            printf("Novo tipo (1 - Deposito, 0 - Retirada): ");
+            scanf("%d", &ops[i].tipo);
+            printf("Novo label: ");
+            scanf(" %29[^\n]", ops[i].label);
+            printf("Nova descricao: ");
+            scanf(" %99[^\n]", ops[i].descricao);
+            printf("Novo codigo (0, 1 ou 2): ");
+            scanf("%d", &ops[i].codigo);
+            printf("Novo valor: ");
+            scanf("%f", &ops[i].valor);
+            return;
         }
     }
+    printf("Operacao nao encontrada.\n");
 }
 
-void alterar() {
-    int id_altera;
-    int encontrou = 0;
-    char buffer[100];
-    printf("Insira o ID da operacao que quer alterar: ");
-    scanf("%d", &id_altera);
-    getchar();
+void gravar()
+{
+    int i;
+    FILE *f = fopen("fluxo.txt", "w");
 
-    for(int i = 0; i < cont; i++) {
-        if (dt[i].id == id_altera) {
-            encontrou = 1;
-
-            printf("\nInsira o tipo de operacao [1 - Deposito ou entrada de valores | 0 - Retirada ou pagamento]: ");
-            fgets(buffer, 100, stdin);
-            dt[i].operacao = atoi(buffer);
-       
-            printf("\nDefina uma label para tal operacao: ");
-            fgets(buffer, 100, stdin);
-            buffer[strlen(buffer) - 1] = '\0';
-            strcpy(dt[i].label, buffer);
-           
-            printf("\nDefina uma descricao para tal operacao: ");
-            fgets(buffer, 100, stdin);
-            buffer[strlen(buffer) - 1] = '\0';
-            strcpy(dt[i].desc, buffer);
-
-            printf("\nInsira o codigo de operacao [0 - Despesas obrigatorias | 1 - Depositos | 2 - Pagamentos por despesas nao obrigatorias]: ");
-            fgets(buffer, 100, stdin);
-            dt[i].cod = atoi(buffer);
-           
-            printf("\nInsira o valor da operacao: ");
-            fgets(buffer, 100, stdin);
-            dt[i].valor = atof(buffer);
-        }  
-    }
-
-    if (encontrou == 0) {
-        printf("\nOperacao nao encontrada!");
+    if (f == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
         return;
     }
+    for (i = 0; i < qtd; i++) {
+        fprintf(f, "%d;%d;%s;%s;%d;%.2f\n", ops[i].id, ops[i].tipo, ops[i].label, ops[i].descricao, ops[i].codigo, ops[i].valor);
+    }
+    fclose(f);
+    printf("Dados gravados.\n");
 }
 
+void ler()
+{
+    FILE *f = fopen("fluxo.txt", "r");
 
-int main() {
-    salvar_struct();
-    int escolha = -1;
+    if (f == NULL) {
+        printf("Arquivo nao encontrado.\n");
+        return;
+    }
+    qtd = 0;
+    while (qtd < 500 && fscanf(f, "%d;%d;%29[^;];%99[^;];%d;%f\n", &ops[qtd].id, &ops[qtd].tipo, ops[qtd].label, ops[qtd].descricao, &ops[qtd].codigo, &ops[qtd].valor) == 6) {
+        qtd++;
+    }
+    fclose(f);
+    contador = qtd + 1;
+    printf("Dados carregados.\n");
+}
 
-    while (escolha != 0) {
+int main()
+{
+    int op;
+    int x;
 
-        printf("\n===== MENU =====\n");
-        printf("1 - Efetuar lancamento\n");
+    do {
+        printf("\n1 - Lancar operacao\n");
         printf("2 - Consultar saldo\n");
-        printf("3 - Listar todas as operacoes\n");
+        printf("3 - Listar todas\n");
         printf("4 - Listar por tipo\n");
         printf("5 - Listar por codigo\n");
-        printf("6 - Consultar por Label\n");
+        printf("6 - Consultar por label\n");
         printf("7 - Alterar operacao\n");
-        printf("8 - Gravar dados em arquivo\n");
-        printf("9 - Ler dados do arquivo\n");
+        printf("8 - Gravar em arquivo\n");
+        printf("9 - Ler do arquivo\n");
         printf("0 - Sair\n");
-        printf("Lembre-se de salvar antes de sair!\n");
+        printf("Opcao: ");
+        scanf("%d", &op);
 
-        printf("\nEscolha: ");
-        scanf("%d", &escolha);
-        getchar();
-
-        switch (escolha) {
-
+        switch (op) {
             case 1:
-                cadastrar();
+                lancar();
                 break;
-
             case 2:
-                consultar_saldo();
+                saldo();
                 break;
-
             case 3:
-                consultar_operacoes();
+                listar(0, 0);
                 break;
-
             case 4:
-                listar_tipo();
+                printf("Tipo (1 - Deposito, 0 - Retirada): ");
+                scanf("%d", &x);
+                listar(1, x);
                 break;
-
             case 5:
-                listar_cod();
+                printf("Codigo (0, 1 ou 2): ");
+                scanf("%d", &x);
+                listar(2, x);
                 break;
-
             case 6:
-                consultar_label();
+                consultarLabel();
                 break;
-
             case 7:
                 alterar();
                 break;
-
             case 8:
-                salvar();
-                salvar_struct();
+                gravar();
                 break;
-
             case 9:
-                ler_tudo();
+                ler();
                 break;
-
-            case 0:
-                printf("\nSaindo...");
-                break;
-
-            default:
-                printf("\nOpcao invalida!");
         }
-    }
+    } while (op != 0);
+
     return 0;
 }
