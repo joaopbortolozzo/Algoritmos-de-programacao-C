@@ -13,6 +13,8 @@ int main(){
     struct livro lista[100];
     int total=0;
     int opcao;
+    
+
 
     while(1){
         printf("------ MENU ------\n");
@@ -44,15 +46,49 @@ int main(){
             int i = 0;
             float soma = 0;
             while(i < total){
-                printf("ID: %d | Título: %s | Autor: %s | Ano: %d | Preço: %.2f\n", lista[i].id)
+                printf("ID: %d | Título: %s | Autor: %s | Ano: %d | Preço: %.2f\n",
+                lista[i].id, lista[i].titulo, lista[i].autor, lista[i].ano, lista[i].preco);
+                soma += lista[i].preco;
+                i++;
+            }
+            printf("Valor total: %.2f\n", soma);
+            break;
+
+        case 3:{
+            int id_busca;
+            int achou=0;
+            int i = 0;
+            
+            printf("Digite o ID que deseja buscar: ");
+            scanf("%d", &id_busca);
+
+            while(i < total){
+                if (lista[i].id == id_busca){
+                    printf("ID: %d | Título: %s | Autor: %s | Ano: %d | Preço: %.2f\n",
+                    lista[i].id, lista[i].titulo, lista[i].autor, lista[i].ano, lista[i].preco);
+                    achou = 1;
+
+                }  
+                   i++; 
+                }
+                if (achou == 0){
+                    printf("ID diferente");
+                }
+                break;
+                
             }
 
+        case 4:
+            printf("Saindo...");
+            return 0;
+    }       
+
         
-
-    }
-
+            
+        
+}
 }
 
 
-}
+
 
