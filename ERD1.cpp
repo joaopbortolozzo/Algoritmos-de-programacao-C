@@ -95,5 +95,47 @@ void inserirInicioLista(Descritor* descritor, dados d)
     descritor->tamanho++;
 }
 
+void inserirMeioLista(Descritor* descritor, dados d, int posicao)
+{
+    // lista vazia ou posição 1: na prática é inserir no início
+    if (descritor->inicio == NULL || posicao <= 1)
+    {
+        inserirInicioLista(descritor, d);
+        return;
+    }
+
+    // posição depois do último: na prática é inserir no fim
+    if (posicao > descritor->tamanho)
+    {
+        inserirFimLista(descritor, d);
+        return;
+    }
+
+    // a partir daqui, o nó entra de verdade no MEIO (entre dois nós existentes)
+    Elem* novo = (Elem*) malloc(sizeof(Elem));
+    if (novo == NULL) return;
+    novo->cadastro = d;
+
+    // anda pela lista até o nó que ficará ANTES do novo (posição - 1)
+    Elem* anterior = descritor->inicio;
+    for (int i = 1; i < posicao - 1; i++)
+    {
+        anterior = anterior->prox;
+    }
+
+    // o nó que ficará DEPOIS do novo é o próximo do anterior
+    Elem* seguinte = anterior->prox;
+
+    // 1) liga o novo nos dois vizinhos (o novo olha pros dois lados)
+    novo->ant = anterior;
+    novo->prox = seguinte;
+
+    // 2) liga os vizinhos no novo (cada um olha de volta pro novo)
+    anterior->prox = novo;
+    seguinte->ant = novo;
+
+    // inicio e fim do descritor NÃO mudam: o novo não é nem o primeiro nem o último
+    descritor->tamanho++;
+}
 
 
