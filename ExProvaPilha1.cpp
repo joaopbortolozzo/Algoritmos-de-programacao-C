@@ -38,90 +38,90 @@ Descritor* criar(void)
 }
 
 // ===== INSERIR (PUSH) =====
-// Coloca um elemento no TOPO da pilha (LIFO)
+// Coloca um elemento no TOPO da pilha (LIFO: o último a entrar é o primeiro a sair)
+// Recebe o descritor da pilha (desc) e os dados a guardar (d). Retorna 1 se deu certo.
 int inserirPilha(Descritor* desc, dados d)
 {
-    Elem* novo;
-    novo = (Elem*)malloc(sizeof(Elem));   // reserva memória pro nó novo
+    Elem* novo;                            // ponteiro que vai apontar pro nó novo
+    novo = (Elem*)malloc(sizeof(Elem));    // aloca memória pro nó e guarda o endereço em "novo"
 
-    novo->cadastro = d;     // copia os dados pra dentro do nó
-    novo->prox = NULL;
+    novo->cadastro = d;                    // copia os dados recebidos pra dentro do nó
+    novo->prox = NULL;                     // por segurança, o nó nasce apontando pra nada
 
-    if (desc->tamanho == 0)
+    if (desc->tamanho == 0)                // a pilha está vazia?
     {
-        // pilha vazia: o nó novo é o único, então é topo e fundo
-        desc->inicio = novo;
-        desc->fim = novo;
+        desc->inicio = novo;               // o nó novo é o topo (início)
+        desc->fim = novo;                  // e também o fundo (fim), pois é o único
     }
-    else
+    else                                   // a pilha já tem elementos
     {
-        // ORDEM IMPORTA: primeiro liga o novo no topo antigo...
-        novo->prox = desc->inicio;
-        // ...depois o novo vira o topo (se invertesse, perdia a pilha)
-        desc->inicio = novo;
+        novo->prox = desc->inicio;         // 1º) o novo aponta pro topo antigo (liga na pilha)
+        desc->inicio = novo;               // 2º) o novo passa a ser o topo
+                                           // (se invertesse a ordem, perderia a pilha)
     }
-    (desc->tamanho)++;   // um elemento a mais
+    (desc->tamanho)++;                     // incrementa o contador: um elemento a mais
 
-    return 1;
+    return 1;                              // sinaliza sucesso
 }
 
 // ===== REMOVER (POP) =====
 // Tira o elemento do TOPO e devolve os dados dele
 dados removerPilha(Descritor* desc)
 {
-    Elem* elementoremovido;
+    Elem* elementoremovido;                // ponteiro auxiliar pra guardar o nó que sairá
 
-    // dado "vazio", devolvido se a pilha não tiver nada (idade -1 é o sinal)
-    dados d;
-    strcpy_s(d.nome, "");
-    d.idade = -1;
+    dados d;                               // variável que será devolvida
+    strcpy_s(d.nome, "");                  // nome vazio (valor padrão de "nada encontrado")
+    d.idade = -1;                          // idade -1 é o sinal de que a pilha estava vazia
 
-    // pilha vazia: sai da função, senão acessaria NULL e quebraria
-    if (desc->tamanho == 0)
+    if (desc->tamanho == 0)                // pilha vazia?
     {
-        return d;
+        return d;                          // sai já devolvendo o dado "vazio"; evita acessar NULL
     }
 
-    elementoremovido = desc->inicio;        // 1) guarda quem é o topo
-    d = elementoremovido->cadastro;         // 2) salva os dados dele
-    desc->inicio = elementoremovido->prox;  // 3) o de baixo vira o novo topo
-    free(elementoremovido);                 // 4) libera a memória do nó antigo
-    (desc->tamanho)--;                      // um elemento a menos
+    elementoremovido = desc->inicio;        // 1) guarda quem é o topo atual
+    d = elementoremovido->cadastro;         // 2) salva os dados do topo pra devolver depois
+    desc->inicio = elementoremovido->prox;  // 3) o elemento de baixo vira o novo topo
+    free(elementoremovido);                 // 4) libera a memória do nó antigo (evita vazamento)
+    (desc->tamanho)--;                      // decrementa o contador: um elemento a menos
 
-    return d;
+    return d;                               // devolve os dados do elemento removido
 }
 
 // ===== PASSAR DE UMA PILHA PRA OUTRA =====
 // Tira tudo de A e coloca em B. A ordem INVERTE (1,2,3 vira 3,2,1)
 void passarPilha(Descritor* A, Descritor* B)
 {
-    dados aux;
+    dados aux;                             // variável temporária pra carregar cada elemento
 
-    while (A->tamanho != 0)          // repete até A esvaziar
+    while (A->tamanho != 0)                // repete enquanto A tiver elementos
     {
-        aux = removerPilha(A);       // tira do topo de A
-        inserirPilha(B, aux);        // coloca no topo de B
+        aux = removerPilha(A);             // tira o topo de A e guarda em aux
+        inserirPilha(B, aux);              // coloca aux no topo de B
     }
 }
 
-void listarPilha(Descritor*Pilha)
+// ===== LISTAR =====
+// Mostra todos os elementos sem perder a pilha original
+void listarPilha(Descritor* Pilha)
 {
-    Descritor*aux_PILHA = criar();
-    dados aux;
+    Descritor* aux_PILHA = criar();        // cria uma pilha auxiliar vazia
 
-    while(Pilha->tamanho != 0)
+    dados aux;                             // variável temporária
+
+    while (Pilha->tamanho != 0)            // 1ª fase: esvazia a pilha original
     {
-        aux=  removerPilha(Pilha);
-        printf("\nNOME: %s", aux.nome);
-        printf("\nIDADE: %d", aux.idade);
-        inserirPilha(aux_PILHA, aux);
+        aux = removerPilha(Pilha);         // tira o topo da original
+        printf("\nNOME: %s", aux.nome);    // mostra o nome
+        printf("\nIDADE: %d", aux.idade);  // mostra a idade
+        inserirPilha(aux_PILHA, aux);      // guarda na auxiliar (ordem fica invertida lá)
     }
 
-    while(aux_PILHA->tamanho != 0)
+    while (aux_PILHA->tamanho != 0)        // 2ª fase: devolve tudo pra pilha original
     {
-        aux = removerPilha(aux_PILHA);
-        inserirPilha(Pilha,aux);
+        aux = removerPilha(aux_PILHA);     // tira da auxiliar
+        inserirPilha(Pilha, aux);          // recoloca na original (inverte de novo = ordem original)
     }
 
-    free(aux_PILHA);
+    free(aux_PILHA);                       // libera o descritor da auxiliar (ela já está vazia)
 }
