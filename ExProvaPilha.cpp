@@ -88,3 +88,37 @@ dados removerPilha(Descritor* desc)
     return d;
 }
 
+void passarPilha(Descritor* A, Descritor* B)
+{
+    dados aux;                             // variável temporária pra carregar cada elemento
+
+    while (A->tamanho != 0)                // repete enquanto A tiver elementos
+    {
+        aux = removerPilha(A);             // tira o topo de A e guarda em aux
+        inserirPilha(B, aux);              // coloca aux no topo de B
+    }
+}
+
+
+void listarPilha(Descritor* Pilha)
+{
+    Descritor* aux_PILHA = criar();        
+
+    dados aux;                         
+
+    while (Pilha->tamanho != 0)           
+    {
+        aux = removerPilha(Pilha);        
+        printf("\nNOME: %s", aux.nome);    
+        printf("\nIDADE: %d", aux.idade);  
+        inserirPilha(aux_PILHA, aux);     
+    }
+
+    while (aux_PILHA->tamanho != 0)        
+    {
+        aux = removerPilha(aux_PILHA);     
+        inserirPilha(Pilha, aux);          
+    }
+
+    free(aux_PILHA);                       
+}

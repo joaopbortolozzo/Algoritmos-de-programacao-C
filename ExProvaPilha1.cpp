@@ -61,7 +61,7 @@ int inserirPilha(Descritor* desc, dados d)
     }
     (desc->tamanho)++;                     // incrementa o contador: um elemento a mais
 
-    return 1;                              // sinaliza sucesso
+    return 1;                              
 }
 
 // ===== REMOVER (POP) =====
@@ -107,7 +107,7 @@ void listarPilha(Descritor* Pilha)
 {
     Descritor* aux_PILHA = criar();        // cria uma pilha auxiliar vazia
 
-    dados aux;                             // variável temporária
+    dados aux;                           // variável temporária
 
     while (Pilha->tamanho != 0)            // 1ª fase: esvazia a pilha original
     {
@@ -125,3 +125,69 @@ void listarPilha(Descritor* Pilha)
 
     free(aux_PILHA);                       // libera o descritor da auxiliar (ela já está vazia)
 }
+
+void consultarPilha(Descritor*Pilha, char nomeprocurado[])
+{
+    Descritor*auxPILHA = criar(); // pilha auxiliar vazia
+    dados aux;
+    int achou = 0;                // 0 = "ainda não achei"
+
+    // FASE 1: tirar, comparar e guardar
+    while(Pilha->tamanho != 0)
+    {
+        aux=removerPilha(Pilha); // tira do topo
+
+        if(strcmp(nomeprocurado, aux.nome)== 0) // strcmp devolve 0 se iguais
+        {
+            printf("\nNome: %s", aux.nome);
+            printf("\nIdade: %d", aux.idade);
+            achou = 1;  // marca que achou
+        }
+
+        inserirPilha(auxPILHA,aux); // FORA do if: todo elemento precisa ser guardado
+    }
+
+    // FASE 2: devolver pra Pilha
+    while(auxPILHA->tamanho != 0)
+    {
+        aux=removerPilha(auxPILHA);
+        inserirPilha(Pilha,aux);
+    }
+
+    if(achou == 0) // só depois de olhar TODOS dá pra dizer que não achou
+    {
+        printf("\nNome não encontrado!");
+    }
+
+    free(auxPILHA);
+}
+
+void passarMaiores(Descritor*A, Descritor*B)
+{
+    Descritor*auxPILHA = criar(); // pilha auxiliar vazia
+    dados aux;
+
+    // FASE 1: tirar de A, filtrar pra B, guardar TODOS na auxiliar
+    while(A->tamanho != 0)
+    {
+        aux=removerPilha(A); // tira do topo de A
+
+        if(aux.idade >= 18) // use > 18 se o enunciado disser "maiores de 18"
+        {
+            inserirPilha(B, aux); // só quem passa no filtro vai pra B
+        }
+
+        inserirPilha(auxPILHA, aux); // FORA do if: A precisa voltar completa
+}
+
+    // FASE 2: devolver tudo pra A
+    while(auxPILHA->tamanho != 0) 
+    {
+        aux=removerPilha(auxPILHA);
+        inserirPilha(A, aux); // atenção: é A, não "Pilha"
+    }
+
+    free(auxPILHA);
+
+}
+
